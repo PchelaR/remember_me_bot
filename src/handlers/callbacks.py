@@ -1,6 +1,5 @@
 import datetime
 
-from aiogram import F
 from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import StateFilter
@@ -12,7 +11,7 @@ from keyboards.keyboards import (
     generate_category_keyboard,
     main_menu_keyboard,
     generate_task_keyboard_for_deletion,
-    back_keyboard, generate_reminder_keyboard
+    back_keyboard, generate_reminder_keyboard, category_menu_keyboard, task_menu_keyboard, reminder_menu_keyboard
 )
 from .router import callbacks_router
 from .states import InputState
@@ -54,6 +53,19 @@ async def handle_back_button(callback_query: CallbackQuery, state: FSMContext) -
     """Возвращает пользователя в главное меню и сбрасывает состояние."""
     await state.clear()
     await send_message_with_keyboard(callback_query, BOT_ANSWER["menu_tasks"], task_keyboard)
+
+
+menu_mapping = {
+    "categories_pressed": ("categories_menu", category_menu_keyboard),
+    "tasks_pressed": ("tasks_menu", task_menu_keyboard),
+    "reminders_pressed": ("reminders_menu", reminder_menu_keyboard),
+}
+
+@callbacks_router.callback_query(lambda c: c.data in menu_mapping)
+async def open_menu(callback_query: CallbackQuery) -> None:
+    """Открывает нужное меню в зависимости от нажатой кнопки"""
+    menu_key, keyboard = menu_mapping[callback_query.data]
+    await send_message_with_keyboard(callback_query, BOT_ANSWER[menu_key], keyboard)
 
 
 # ==============================

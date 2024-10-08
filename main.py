@@ -1,3 +1,4 @@
+import os
 import asyncio
 import logging
 
@@ -10,9 +11,11 @@ from handlers.commands import commands_router
 from handlers.callbacks import callbacks_router
 from config import BOT_TOKEN
 
-from handlers.scheduler import start_scheduler
+from handlers.scheduler import start_schedulers
 from middleware import DatabaseSessionMiddleware
 from menus.menus import set_main_menu
+
+os.environ['TZ'] = 'Europe/Moscow'
 
 logging.basicConfig(
     level=logging.INFO,
@@ -39,7 +42,7 @@ async def main():
 
     await bot.delete_webhook(drop_pending_updates=True)
 
-    await start_scheduler(bot)
+    await start_schedulers(bot)
 
     await dp.start_polling(bot)
 

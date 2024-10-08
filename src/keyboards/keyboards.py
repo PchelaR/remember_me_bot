@@ -3,14 +3,47 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from handlers.utils import get_user_categories
 from models.models import ReminderModel
-from .menu_items import task_buttons, main_menu_buttons
+from .menu_items import menu_buttons, main_menu_buttons, category_buttons, task_buttons, reminder_buttons
 
-task_buttons_list = list(task_buttons.values())  # Преобразуем в список
+
+def back_button():
+    return InlineKeyboardButton(text="🚫 Отмена", callback_data="back_pressed")
+
+
+back_keyboard = InlineKeyboardMarkup(inline_keyboard=[[back_button()]])
+
+# Формируем главное меню
+main_menu_list = list(menu_buttons.values())
 task_keyboard = InlineKeyboardMarkup(
     inline_keyboard=[
-        [InlineKeyboardButton(text=text, callback_data=callback) for text, callback in task_buttons_list[i:i + 2]]
-        for i in range(0, len(task_buttons_list), 2)
+        [InlineKeyboardButton(text=text, callback_data=callback)] for text, callback in main_menu_list
     ]
+)
+
+# Формируем меню для работы с категориями
+category_menu_list = list(category_buttons.values())
+category_menu_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+                        [InlineKeyboardButton(text=text, callback_data=callback)] for text, callback in
+                        category_menu_list
+                    ] + [[back_button()]]
+)
+
+# Формируем меню для работы с напоминаниями
+task_menu_list = list(task_buttons.values())
+task_menu_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+                        [InlineKeyboardButton(text=text, callback_data=callback)] for text, callback in task_menu_list
+                    ] + [[back_button()]]
+)
+
+# Формируем меню для работы с событиями
+reminder_menu_list = list(reminder_buttons.values())
+reminder_menu_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+                        [InlineKeyboardButton(text=text, callback_data=callback)] for text, callback in
+                        reminder_menu_list
+                    ] + [[back_button()]]
 )
 
 main_menu_keyboard = InlineKeyboardMarkup(
@@ -18,12 +51,6 @@ main_menu_keyboard = InlineKeyboardMarkup(
         [InlineKeyboardButton(text=text, callback_data=callback)] for text, callback in main_menu_buttons.values()
     ]
 )
-
-
-def back_button():
-    return InlineKeyboardButton(text="🚫 Отмена", callback_data="back_pressed")
-
-back_keyboard = InlineKeyboardMarkup(inline_keyboard=[[back_button()]])
 
 
 async def generate_category_keyboard(user_id, db_session: AsyncSession):
@@ -52,11 +79,11 @@ async def generate_reminder_keyboard(reminders: list[ReminderModel]) -> InlineKe
     """Генерирует клавиатуру для напоминаний."""
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(
-                text=f"{reminder.date.strftime('%d.%m.%Y')} - {reminder.description}",
-                callback_data=f"reminder_{reminder.id}"
-            )] for reminder in reminders
-        ] + [[back_button()]]
+                            [InlineKeyboardButton(
+                                text=f"{reminder.date.strftime('%d.%m.%Y')} - {reminder.description}",
+                                callback_data=f"reminder_{reminder.id}"
+                            )] for reminder in reminders
+                        ] + [[back_button()]]
     )
 
     return keyboard
